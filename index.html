@@ -515,7 +515,7 @@ const REDUCE = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const FAST   = /[?&]skip=1/.test(location.search);
 const $ = id => document.getElementById(id);
 
-const APP_VER = '20260813-3';   /* 跟 sw.js 最上面的 VER 對暗號，兩邊要一樣 */
+const APP_VER = document.lastModified;   /* 自動抓這份 HTML 的最後修改時間 */
 let swVer  = '—';
 let booted = false;
 
