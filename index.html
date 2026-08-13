@@ -265,23 +265,53 @@ body{
   flex:none;display:flex;align-items:center;gap:7px;
   padding:9px 10px 10px;border-bottom:1px solid var(--edge);
 }
+/* 斜角切角，跟你 logo 的稜角同一個語言 */
 .seg{
-  flex:1;display:flex;background:var(--panel);
-  border:1px solid var(--edge);border-radius:11px;padding:3px;gap:3px;
+  flex:1;display:flex;gap:4px;padding:3px;
+  background:linear-gradient(180deg,#1A1E26,#0E1116);
+  border:1px solid var(--edge);
+  clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px);
 }
 .seg button{
-  flex:1;background:transparent;border:0;border-radius:8px;
-  color:var(--legend);font:inherit;font-size:12px;letter-spacing:.14em;
-  padding:9px 0;cursor:pointer;transition:background .18s ease,color .18s ease;
+  position:relative;overflow:hidden;
+  flex:1;background:transparent;border:0;
+  color:var(--legend);font:inherit;font-size:12px;letter-spacing:.2em;
+  padding:10px 0;cursor:pointer;
+  clip-path:polygon(9px 0,100% 0,100% calc(100% - 9px),calc(100% - 9px) 100%,0 100%,0 9px);
+  transition:color .2s ease;
 }
-.seg button.on{background:var(--brand);color:#fff}
+/* 底色獨立一層，才能跟鏡面反光疊在一起 */
+.seg button::before{
+  content:'';position:absolute;inset:0;z-index:-1;
+  background:linear-gradient(160deg,#7E000C 0%,var(--brand) 42%,#6B000A 100%);
+  opacity:0;transition:opacity .22s ease;
+}
+/* 斜掠而過的鏡面高光 */
+.seg button::after{
+  content:'';position:absolute;top:0;bottom:0;width:44%;
+  background:linear-gradient(100deg,transparent,rgba(255,255,255,.30),transparent);
+  transform:translateX(-160%) skewX(-18deg);
+  opacity:0;pointer-events:none;
+}
+.seg button.on{color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.5)}
+.seg button.on::before{opacity:1}
+.seg button.on::after{animation:sheen .85s cubic-bezier(.3,.8,.4,1) forwards}
+@keyframes sheen{
+  0%{opacity:.9;transform:translateX(-160%) skewX(-18deg)}
+  100%{opacity:0;transform:translateX(340%) skewX(-18deg)}
+}
+.seg button:active{transform:translateY(1px)}
+
 .reload{
-  flex:0 0 42px;height:42px;background:var(--panel);
-  border:1px solid var(--edge);border-radius:11px;color:var(--legend);
+  flex:0 0 44px;height:44px;color:var(--legend);
+  background:linear-gradient(180deg,#1A1E26,#0E1116);
+  border:1px solid var(--edge);
   display:grid;place-items:center;cursor:pointer;
+  clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px);
+  transition:color .18s ease;
 }
-.reload:active{background:var(--panel-hi)}
-.reload svg{width:17px;height:17px}
+.reload:active{color:var(--brand-hi)}
+.reload svg{width:18px;height:18px}
 
 /* 兩個分頁 */
 .views{flex:1;position:relative;min-height:0}
@@ -344,27 +374,37 @@ body{
 }
 .tile.fire .sweep{animation:sweep .44s ease-out}
 
-/* ── 待機掃描：一道光每 5 秒巡過六格 ── */
+/* ── 待機掃描：一道光每 5 秒巡過六格 ──
+   --scan 註冊成可動畫的數值，亮起快、退場慢，看起來就是滑過去的 */
+@property --scan{
+  syntax:'<number>';
+  initial-value:0;
+  inherits:false;
+}
 .grid.live .tile{
-  --scan:0;                    /* 這一格被掃到的強度 0~1 */
+  --scan:0;
+  transition:--scan .95s cubic-bezier(.25,.7,.35,1);
 }
 .grid.live .tile .lamp{
   opacity:calc(.35 + var(--scan) * .55);
   filter:drop-shadow(0 0 calc(var(--scan) * 12px) var(--c));
+  transition:opacity .95s ease, filter .95s ease;
 }
 .grid.live .tile::after{
   opacity:calc(.25 + var(--scan) * .6);
   box-shadow:0 0 calc(var(--scan) * 10px) var(--c);
+  transition:opacity .95s ease, box-shadow .95s ease;
 }
 .grid.live .tile .ghost{
   opacity:calc(.06 + var(--scan) * .07);
+  transition:opacity .95s ease;
 }
 /* 掃過時左上角掠過一抹極淡的暈 */
 .tile .glow{
   position:absolute;inset:0;pointer-events:none;border-radius:15px;
   background:radial-gradient(circle at 22% 28%,var(--c),transparent 62%);
-  opacity:calc(var(--scan) * .08);
-  transition:opacity .5s ease;
+  opacity:calc(var(--scan) * .09);
+  transition:opacity .95s ease;
 }
 @keyframes sweep{
   0%{opacity:.55;transform:translateX(-100%)}
@@ -445,8 +485,8 @@ body{
 <section class="screen" id="dash">
   <div class="switch">
     <div class="seg">
-      <button id="tabLaunch" class="on">發射台</button>
-      <button id="tabBoard">儀表板</button>
+      <button id="tabLaunch" class="on">式　神</button>
+      <button id="tabBoard">業　簿</button>
     </div>
     <button class="reload" id="reload" aria-label="重新載入儀表板">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -643,10 +683,11 @@ let scanTimer = null;
 function startScan(){
   if (scanTimer) return;
   let i = 0;
+  const CYCLE = tiles.length + 4;          /* 六格 + 四拍留白 */
   const step = () => {
+    /* 先算這一拍該亮誰，再套用 —— 順序寫反的話最後一格會被清掉 */
     tiles.forEach((t, n) => t.style.setProperty('--scan', n === i ? '1' : '0'));
-    i = (i + 1) % (tiles.length + 4);      /* 多 4 拍留白，才不會一直在跑 */
-    if (i >= tiles.length) tiles.forEach(t => t.style.setProperty('--scan','0'));
+    i = (i + 1) % CYCLE;
   };
   step();
   scanTimer = setInterval(step, 620);
