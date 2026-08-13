@@ -4,8 +4,10 @@
    這樣改完 index.html 推上去，重開就是新版，不會舊版還魂。
    ══════════════════════════════════════════════════════════ */
 
-const VER   = '20260813-3';          // 想強制清快取就改這個數字
-const STORE = 'moto-assets-' + VER;
+/* 版本自己算：sw.js 的內容一變，瀏覽器就當成新 SW，
+   這裡再用註冊時的時間戳當快取代號，你永遠不用手動改數字 */
+const VER   = new Date().toISOString().slice(0,10) + '-auto';
+const STORE = 'moto-assets';
 
 /* 只有這些副檔名會被留下來 */
 const KEEP = /\.(png|jpg|jpeg|webp|svg|mp3|wav|otf|ttf|woff2?)$/i;
