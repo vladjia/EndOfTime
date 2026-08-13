@@ -641,6 +641,7 @@ reload.addEventListener('mouseup', rUp);
 reload.addEventListener('mouseleave', () => clearTimeout(rHold));
 
 function fire(app, el){
+  if (Date.now() < armedAt) return;      /* 剛進畫面，這一下是殘留的觸碰 */
   el.classList.remove('fire'); void el.offsetWidth; el.classList.add('fire');
   click();
   if(!BRIDGE){
@@ -684,6 +685,7 @@ function show(id){
   $(id).classList.add('on');
 }
 let seq = [], done = false;
+let armedAt = 0;          /* 進發射台後這段時間內不接受發射，擋誤觸 */
 function at(ms, fn){ seq.push(setTimeout(fn, ms)); }
 function finish(){
   if(done) return;
@@ -693,6 +695,7 @@ function finish(){
   try{ fade(aTrans); }catch(e){}
   show('dash'); loadDash();
   revealTiles();
+  armedAt = Date.now() + 900;     /* 0.9 秒內的觸碰一律無效 */
 }
 function fade(a){
   if(a.paused) return;
