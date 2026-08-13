@@ -379,7 +379,7 @@ body{
 @property --scan{
   syntax:'<number>';
   initial-value:0;
-  inherits:false;
+  inherits:true;        /* 子元素（燈號、底紋、暈）要讀得到才會一起亮 */
 }
 .grid.live .tile{
   --scan:0;
