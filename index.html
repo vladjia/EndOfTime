@@ -709,7 +709,12 @@ function fade(a){
   }, 45);
 }
 
-$('starter').addEventListener('click', ignite, {once:true});
+/* 不用 once，免得被幽靈事件用掉；改用 pointerdown 反應也快 */
+$('starter').addEventListener('pointerdown', e => {
+  e.preventDefault();
+  e.stopPropagation();
+  ignite();
+});
 
 function ignite(){
   booted = true;
