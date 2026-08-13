@@ -505,7 +505,8 @@ const ICONS = {
   star:'<path d="M12 2.5 14 10l7.5 2-7.5 2-2 7.5-2-7.5L2.5 12 10 10z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>',
 };
 
-const BRIDGE = typeof window.AppInventor !== 'undefined';
+const SHELL  = (typeof window.WZ !== 'undefined' && typeof WZ.launch === 'function');
+const BRIDGE = SHELL || typeof window.AppInventor !== 'undefined';
 const REDUCE = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const FAST   = /[?&]skip=1/.test(location.search);
 const $ = id => document.getElementById(id);
@@ -649,7 +650,17 @@ function fire(app, el){
     peekTimer = setTimeout(() => peek.classList.remove('on'), 2600);
     return;
   }
-  /* 尾巴的時間戳必留 —— 同字串 App Inventor 不會再觸發 */
+  if (SHELL){
+    const r = WZ.launch(app.pkg, app.cls);
+    if (r !== 'OK'){
+      peek.innerHTML = `<b>${app.zh}</b>${r}`;
+      peek.classList.add('on');
+      clearTimeout(peekTimer);
+      peekTimer = setTimeout(() => peek.classList.remove('on'), 4000);
+    }
+    return;
+  }
+  /* 舊的 App Inventor 殼還留著相容，尾巴的時間戳必留 */
   window.AppInventor.setWebViewString(app.pkg + '|' + app.cls + '|' + Date.now());
 }
 
