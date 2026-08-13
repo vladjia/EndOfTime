@@ -287,7 +287,7 @@ body{
 
 /* ── 發射台：六個大格 ── */
 .grid{
-  flex:1;display:grid;
+  flex:1;width:100%;max-width:540px;margin:0 auto;display:grid;
   grid-template-columns:1fr 1fr;grid-template-rows:repeat(3,1fr);
   gap:10px;padding:10px;min-height:0;
 }
@@ -307,9 +307,19 @@ body{
 .tile:focus-visible{outline:2px solid var(--c);outline-offset:2px}
 
 .tile .lamp{
-  width:38px;height:38px;color:var(--c);opacity:.3;
+  width:46px;height:46px;color:var(--c);opacity:.35;
   transition:opacity .18s ease,filter .18s ease;
 }
+/* 同一個圖示放大當底紋，從右下角溢出去 */
+.tile .ghost{
+  position:absolute;right:-8%;bottom:-8%;
+  width:56%;aspect-ratio:1;color:var(--c);
+  opacity:.06;pointer-events:none;
+  transition:opacity .18s ease;
+}
+.tile .ghost svg{width:100%;height:100%;display:block}
+.tile:active .ghost{opacity:.15}
+.tile.lit .ghost{opacity:.12}
 .tile .lamp svg{width:100%;height:100%;display:block}
 .tile.lit .lamp,.tile:active .lamp{opacity:1;filter:drop-shadow(0 0 11px var(--c))}
 .tile .zh{font-size:20px;font-weight:600;letter-spacing:.08em;line-height:1.15}
@@ -548,8 +558,10 @@ APPS.forEach(a => {
   const b = document.createElement('button');
   b.className = 'tile';
   b.style.setProperty('--c', `var(--${a.c})`);
+  const svg = ICONS[a.icon] || ICONS.star;
   b.innerHTML =
-    `<span class="lamp"><svg viewBox="0 0 24 24">${ICONS[a.icon]||ICONS.star}</svg></span>
+    `<span class="ghost"><svg viewBox="0 0 24 24">${svg}</svg></span>
+     <span class="lamp"><svg viewBox="0 0 24 24">${svg}</svg></span>
      <span class="txt"><span class="zh">${a.zh}</span><span class="en">${a.en}</span></span>
      <span class="sweep"></span>`;
 
