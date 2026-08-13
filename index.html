@@ -12,7 +12,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="MOTO">
+<meta name="apple-mobile-web-app-title" content="EndOfTime">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
 <link rel="icon" href="./icon-192.png" type="image/png">
 <style>
@@ -50,7 +50,19 @@ body{
   user-select:none;
 }
 
-position:fixed;inset:0;
+.screen{
+  position:fixed;inset:0;
+  opacity:0;
+  visibility:hidden;          /* 沒顯示就徹底退出，不吃觸碰、也不佔畫面 */
+  transition:opacity .45s ease;
+  display:flex;flex-direction:column;
+  z-index:1;
+}
+.screen.on{
+  opacity:1;
+  visibility:visible;
+  z-index:2;
+}
 
 /* ═══════════ 1 · 點火 ═══════════ */
 #boot{align-items:center;justify-content:center}
