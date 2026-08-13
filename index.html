@@ -50,13 +50,7 @@ body{
   user-select:none;
 }
 
-.screen{
-  position:fixed;inset:0;
-  opacity:0;pointer-events:none;
-  transition:opacity .5s ease;
-  display:flex;flex-direction:column;
-}
-.screen.on{opacity:1;pointer-events:auto}
+position:fixed;inset:0;
 
 /* ═══════════ 1 · 點火 ═══════════ */
 #boot{align-items:center;justify-content:center}
@@ -86,7 +80,7 @@ body{
 
 /* 起動鈕 */
 .starter{
-  position:absolute;
+  position:absolute;z-index:10;
   top:50%;left:50%;margin:-79px 0 0 -79px;   /* 158/2，用 margin 置中才不會跟 transform 打架 */
   width:158px;height:158px;border-radius:50%;
   background:radial-gradient(circle at 50% 38%,#1B1F27,#0B0D11);
