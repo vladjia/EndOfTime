@@ -52,7 +52,10 @@ self.addEventListener('fetch', e => {
       const c = await caches.open(STORE);
       const hit = await c.match(req);
       const net = fetch(req).then(res => {
-        if (res && res.ok) c.put(req, res.clone());
+        /* 206 是分段回應（音檔會走 Range），Cache API 不收，硬塞會整個炸掉 */
+        if (res && res.ok && res.status === 200 && res.type === 'basic'){
+          c.put(req, res.clone()).catch(() => {});
+        }
         return res;
       }).catch(() => null);
       return hit || net || new Response('', { status: 504 });
