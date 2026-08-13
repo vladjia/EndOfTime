@@ -251,57 +251,90 @@ body{
   font-size:9px;letter-spacing:.24em;color:#3D444E;text-transform:uppercase;z-index:5;
 }
 
-/* ═══════════ 3 · 儀表板 ═══════════ */
+/* ═══════════ 3 · 主畫面 ═══════════ */
 #dash{padding-top:env(safe-area-inset-top)}
 
-.rack{
-  flex:none;display:flex;align-items:stretch;gap:6px;padding:8px 8px 9px;
-  border-bottom:1px solid var(--edge);
-  overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;
-  scrollbar-width:none;
+/* 上緣切換列 */
+.switch{
+  flex:none;display:flex;align-items:center;gap:7px;
+  padding:9px 10px 10px;border-bottom:1px solid var(--edge);
 }
-.rack::-webkit-scrollbar{display:none}
+.seg{
+  flex:1;display:flex;background:var(--panel);
+  border:1px solid var(--edge);border-radius:11px;padding:3px;gap:3px;
+}
+.seg button{
+  flex:1;background:transparent;border:0;border-radius:8px;
+  color:var(--legend);font:inherit;font-size:12px;letter-spacing:.14em;
+  padding:9px 0;cursor:pointer;transition:background .18s ease,color .18s ease;
+}
+.seg button.on{background:var(--brand);color:#fff}
+.reload{
+  flex:0 0 42px;height:42px;background:var(--panel);
+  border:1px solid var(--edge);border-radius:11px;color:var(--legend);
+  display:grid;place-items:center;cursor:pointer;
+}
+.reload:active{background:var(--panel-hi)}
+.reload svg{width:17px;height:17px}
 
+/* 兩個分頁 */
+.views{flex:1;position:relative;min-height:0}
+.view{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  opacity:0;pointer-events:none;transition:opacity .28s ease;
+}
+.view.on{opacity:1;pointer-events:auto}
+
+/* ── 發射台：六個大格 ── */
+.grid{
+  flex:1;display:grid;
+  grid-template-columns:1fr 1fr;grid-template-rows:repeat(3,1fr);
+  gap:10px;padding:10px;min-height:0;
+}
 .tile{
-  position:relative;overflow:hidden;flex:1 0 auto;min-width:56px;
-  background:var(--panel);border:1px solid var(--edge);border-radius:11px;
+  position:relative;overflow:hidden;
+  background:var(--panel);border:1px solid var(--edge);border-radius:15px;
   color:var(--white);font:inherit;
-  display:flex;flex-direction:column;align-items:center;gap:4px;
-  padding:8px 5px 7px;cursor:pointer;
-  transition:transform .12s ease,background .12s ease;
+  display:flex;flex-direction:column;
+  align-items:flex-start;justify-content:space-between;
+  padding:15px 15px 13px;cursor:pointer;
+  opacity:0;transform:translateY(16px);
+  transition:transform .13s ease,background .13s ease;
 }
-.tile:active{transform:scale(.93);background:var(--panel-hi)}
+.grid.live .tile{animation:tilein .46s cubic-bezier(.2,.9,.3,1) forwards}
+@keyframes tilein{to{opacity:1;transform:translateY(0)}}
+.tile:active{transform:scale(.955);background:var(--panel-hi)}
 .tile:focus-visible{outline:2px solid var(--c);outline-offset:2px}
-.tile .lamp{width:23px;height:23px;color:var(--c);opacity:.5;
-  transition:opacity .16s ease,filter .16s ease}
-.tile .lamp svg{width:100%;height:100%;display:block}
-.tile:active .lamp{opacity:1;filter:drop-shadow(0 0 10px var(--c))}
-.tile .zh{font-size:10px;letter-spacing:.05em;white-space:nowrap;color:#B6BEC8}
-.tile::after{
-  content:'';position:absolute;left:0;right:0;bottom:0;height:2px;
-  background:var(--c);opacity:.3;
+
+.tile .lamp{
+  width:38px;height:38px;color:var(--c);opacity:.3;
+  transition:opacity .18s ease,filter .18s ease;
 }
+.tile .lamp svg{width:100%;height:100%;display:block}
+.tile.lit .lamp,.tile:active .lamp{opacity:1;filter:drop-shadow(0 0 11px var(--c))}
+.tile .zh{font-size:20px;font-weight:600;letter-spacing:.08em;line-height:1.15}
+.tile .en{font-size:8.5px;letter-spacing:.22em;color:var(--legend);
+  text-transform:uppercase;margin-top:4px;display:block}
+.tile .txt{text-align:left}
+.tile::after{
+  content:'';position:absolute;left:0;top:16px;bottom:16px;width:3px;
+  background:var(--c);opacity:.25;transition:opacity .18s ease;
+}
+.tile.lit::after{opacity:.95;box-shadow:0 0 11px var(--c)}
 .tile .sweep{
   position:absolute;inset:0;pointer-events:none;
   background:linear-gradient(90deg,transparent,var(--c),transparent);
   opacity:0;transform:translateX(-100%);
 }
-.tile.fire .sweep{animation:sweep .42s ease-out}
+.tile.fire .sweep{animation:sweep .44s ease-out}
 @keyframes sweep{
   0%{opacity:.55;transform:translateX(-100%)}
   100%{opacity:0;transform:translateX(100%)}
 }
 
-.reload{
-  flex:0 0 40px;background:transparent;border:1px solid var(--edge);
-  border-radius:11px;color:var(--legend);display:grid;place-items:center;cursor:pointer;
-}
-.reload:active{background:var(--panel-hi)}
-.reload svg{width:17px;height:17px}
-
+/* ── 儀表板分頁 ── */
 .stage{flex:1;position:relative;min-height:0;background:var(--ink)}
 .stage iframe{width:100%;height:100%;border:0;display:block}
-
 .veil{
   position:absolute;inset:0;display:grid;place-items:center;gap:14px;
   background:var(--ink);text-align:center;padding:26px;
@@ -321,6 +354,7 @@ body{
 }
 .veil.stuck .bar{display:none}
 .veil.stuck .again{display:block}
+
 
 .peek{
   position:fixed;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom) + 14px);
@@ -368,15 +402,33 @@ body{
   <div class="skiphint">Tap to skip</div>
 </section>
 
-<!-- 3 · 儀表板 -->
+<!-- 3 · 主畫面 -->
 <section class="screen" id="dash">
-  <div class="rack" id="rack"></div>
-  <div class="stage">
-    <iframe id="frame" title="儀表板" referrerpolicy="no-referrer-when-downgrade"></iframe>
-    <div class="veil" id="veil">
-      <div>Dashboard uplink</div>
-      <div class="bar"><span></span></div>
-      <button class="again" id="again">重新連線</button>
+  <div class="switch">
+    <div class="seg">
+      <button id="tabLaunch" class="on">發射台</button>
+      <button id="tabBoard">儀表板</button>
+    </div>
+    <button class="reload" id="reload" aria-label="重新載入儀表板">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 11a8 8 0 1 0-2.1 6.2"/><path d="M20 5v6h-6"/></svg>
+    </button>
+  </div>
+
+  <div class="views">
+    <div class="view on" id="vLaunch">
+      <div class="grid" id="grid"></div>
+    </div>
+    <div class="view" id="vBoard">
+      <div class="stage">
+        <iframe id="frame" title="儀表板" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        <div class="veil" id="veil">
+          <div>Dashboard uplink</div>
+          <div class="bar"><span></span></div>
+          <button class="again" id="again">重新連線</button>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -402,17 +454,17 @@ const ASSET = {
 };
 
 const APPS = [
-  { zh:'胎壓', line:'TIRE PRESSURE MONITOR', c:'red', icon:'tire',
+  { zh:'胎壓',   en:'Tire Pressure', line:'TIRE PRESSURE MONITOR', c:'red', icon:'tire',
     pkg:'com.zl.dev.tire.king',  cls:'com.zl.dev.tire.ui.LauncherActivity' },
-  { zh:'方向', line:'SIGNAL RELAY',          c:'amber', icon:'turn',
+  { zh:'方向',   en:'Signal',        line:'SIGNAL RELAY',          c:'amber', icon:'turn',
     pkg:'com.koso.flasher',      cls:'com.koso.flasher.MainActivity' },
-  { zh:'光輪', line:'LIGHTING BUS · MAIN',   c:'blue', icon:'head',
+  { zh:'光輪',   en:'Wheel Light',   line:'WHEEL LIGHT ARRAY',     c:'violet', icon:'wheel',
     pkg:'com.szelk.ledlamppro',  cls:'com.szelk.ledlamppro.ui.SplashActivity' },
-  { zh:'副燈', line:'LIGHTING BUS · AUX',    c:'cyan', icon:'bulb',
+  { zh:'大燈',   en:'Headlight',     line:'HEADLIGHT MODULE',      c:'blue', icon:'head',
     pkg:'com.ledlamp',           cls:'com.FirstActivity' },
-  { zh:'幻彩', line:'RHX WIRELESS LINK',     c:'green', icon:'wifi',
+  { zh:'背包',   en:'Top Case',      line:'TOP CASE LINK',         c:'green', icon:'bag',
     pkg:'com.rhxled.led_cp',     cls:'com.rhxled.led_cp.WiFiHelper' },
-  { zh:'情境', line:'SCENE CONTROLLER',      c:'violet', icon:'star',
+  { zh:'全車燈', en:'All Lights',    line:'FULL LIGHTING SCENE',   c:'cyan', icon:'beam',
     pkg:'com.spled.scenex',      cls:'com.spled.scenex.MainActivity' },
 ];
 
@@ -446,6 +498,9 @@ const ICONS = {
   turn:'<path d="M10.5 5.5 4.5 12l6 6.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M14.5 5.5 20.5 12l-6 6.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
   head:'<path d="M4 5.5h5a6.5 6.5 0 0 1 0 13H4z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/><path d="M14 8h6M14 12h6M14 16h6" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>',
   bulb:'<circle cx="12" cy="10" r="5" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M9.5 17.5h5M10.5 20.5h3" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><path d="M12 1.5v2M3.6 5.2l1.4 1.4M20.4 5.2 19 6.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>',
+  wheel:'<circle cx="12" cy="12" r="6.6" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 5.4v3M12 15.6v3M5.4 12h3M15.6 12h3M7.3 7.3l2.1 2.1M14.6 14.6l2.1 2.1M16.7 7.3l-2.1 2.1M9.4 14.6l-2.1 2.1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>',
+  bag:'<path d="M5.5 9.5h13a1.5 1.5 0 0 1 1.5 1.5v8a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 19v-8a1.5 1.5 0 0 1 1.5-1.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8.5 9.5V6.8A3.3 3.3 0 0 1 12 3.5a3.3 3.3 0 0 1 3.5 3.3V9.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M9.5 14.5h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
+  beam:'<circle cx="12" cy="12" r="3.6" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M12 2.4v3M12 18.6v3M2.4 12h3M18.6 12h3M5.2 5.2l2.1 2.1M16.7 16.7l2.1 2.1M18.8 5.2l-2.1 2.1M7.3 16.7l-2.1 2.1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
   wifi:'<path d="M3.5 8.5a13 13 0 0 1 17 0" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><path d="M6.8 12.4a8.4 8.4 0 0 1 10.4 0" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><path d="M9.9 16.1a4 4 0 0 1 4.2 0" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><circle cx="12" cy="19.4" r="1.3" fill="currentColor"/>',
   star:'<path d="M12 2.5 14 10l7.5 2-7.5 2-2 7.5-2-7.5L2.5 12 10 10z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>',
 };
@@ -455,7 +510,7 @@ const REDUCE = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const FAST   = /[?&]skip=1/.test(location.search);
 const $ = id => document.getElementById(id);
 
-const APP_VER = '20260813-2';   /* 跟 sw.js 最上面的 VER 對暗號，兩邊要一樣 */
+const APP_VER = '20260813-3';   /* 跟 sw.js 最上面的 VER 對暗號，兩邊要一樣 */
 let swVer  = '—';
 let booted = false;
 
@@ -483,9 +538,10 @@ function click(){
   }catch(e){}
 }
 
-/* ── 發射列 ── */
+/* ── 發射台：六個大格 ── */
 const peek = $('peek');
 let peekTimer = null;
+const tiles = [];
 
 APPS.forEach(a => {
   const b = document.createElement('button');
@@ -493,7 +549,8 @@ APPS.forEach(a => {
   b.style.setProperty('--c', `var(--${a.c})`);
   b.innerHTML =
     `<span class="lamp"><svg viewBox="0 0 24 24">${ICONS[a.icon]||ICONS.star}</svg></span>
-     <span class="zh">${a.zh}</span><span class="sweep"></span>`;
+     <span class="txt"><span class="zh">${a.zh}</span><span class="en">${a.en}</span></span>
+     <span class="sweep"></span>`;
 
   b.addEventListener('click', () => {
     if(b.dataset.lp === '1'){ b.dataset.lp = '0'; return; }
@@ -516,17 +573,43 @@ APPS.forEach(a => {
   b.addEventListener('mouseup', up);
   b.addEventListener('mouseleave', up);
 
-  $('rack').appendChild(b);
+  b.style.animationDelay = (tiles.length * 65) + 'ms';
+  tiles.push(b);
+  $('grid').appendChild(b);
 });
 
-const reload = document.createElement('button');
-reload.className = 'reload';
-reload.setAttribute('aria-label','重新載入儀表板');
-reload.innerHTML =
-  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-        stroke-linecap="round" stroke-linejoin="round">
-     <path d="M20 11a8 8 0 1 0-2.1 6.2"/><path d="M20 5v6h-6"/></svg>`;
-reload.addEventListener('click', () => { if(reload.dataset.lp==='1'){reload.dataset.lp='0';return;} loadDash(); });
+/* 進發射台時：格子依序浮起，六顆燈跑一次自檢 */
+let revealed = false;
+function revealTiles(){
+  if(revealed) return;
+  revealed = true;
+  $('grid').classList.add('live');
+  tiles.forEach((t,i) => {
+    setTimeout(() => {
+      t.classList.add('lit');
+      setTimeout(() => t.classList.remove('lit'), 420);
+    }, 260 + i*65);
+  });
+}
+
+/* ── 兩個分頁切換 ── */
+function tab(which){
+  const launch = which === 'launch';
+  $('vLaunch').classList.toggle('on', launch);
+  $('vBoard').classList.toggle('on', !launch);
+  $('tabLaunch').classList.toggle('on', launch);
+  $('tabBoard').classList.toggle('on', !launch);
+  click();
+}
+$('tabLaunch').addEventListener('click', () => tab('launch'));
+$('tabBoard').addEventListener('click',  () => tab('board'));
+
+/* ── 重載鈕 ── */
+const reload = $('reload');
+reload.addEventListener('click', () => {
+  if(reload.dataset.lp==='1'){ reload.dataset.lp='0'; return; }
+  tab('board'); loadDash();
+});
 
 /* 長按重載鈕 = 對暗號 + 強制清快取重來 */
 let rHold = null;
@@ -555,7 +638,6 @@ reload.addEventListener('touchcancel', () => clearTimeout(rHold));
 reload.addEventListener('mousedown', rDown);
 reload.addEventListener('mouseup', rUp);
 reload.addEventListener('mouseleave', () => clearTimeout(rHold));
-$('rack').appendChild(reload);
 
 function fire(app, el){
   el.classList.remove('fire'); void el.offsetWidth; el.classList.add('fire');
@@ -599,6 +681,7 @@ function finish(){
   try{ aBoot.pause(); }catch(e){}
   try{ fade(aTrans); }catch(e){}
   show('dash'); loadDash();
+  revealTiles();
 }
 function fade(a){
   if(a.paused) return;
