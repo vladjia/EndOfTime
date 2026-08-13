@@ -588,7 +588,10 @@ function revealTiles(){
   tiles.forEach((t,i) => {
     setTimeout(() => {
       t.classList.add('lit');
-      setTimeout(() => t.classList.remove('lit'), 420);
+      setTimeout(() => {
+        t.classList.remove('lit');
+        t.classList.add('ready');      /* 自檢跑完這一格才活過來 */
+      }, 420);
     }, 260 + i*65);
   });
 }
@@ -642,6 +645,7 @@ reload.addEventListener('mouseleave', () => clearTimeout(rHold));
 
 function fire(app, el){
   if (Date.now() < armedAt) return;      /* 剛進畫面，這一下是殘留的觸碰 */
+  if (!el.classList.contains('ready')) return;
   el.classList.remove('fire'); void el.offsetWidth; el.classList.add('fire');
   click();
   if(!BRIDGE){
