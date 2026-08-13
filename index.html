@@ -386,18 +386,22 @@ body{
   transition:--scan .95s cubic-bezier(.25,.7,.35,1);
 }
 .grid.live .tile .lamp{
-  opacity:calc(.35 + var(--scan) * .55);
-  filter:drop-shadow(0 0 calc(var(--scan) * 12px) var(--c));
-  transition:opacity .95s ease, filter .95s ease;
+  opacity:calc(.22 + var(--scan) * .78);
+  filter:drop-shadow(0 0 calc(var(--scan) * 22px) var(--c))
+         brightness(calc(1 + var(--scan) * .8));
+  transform:scale(calc(1 + var(--scan) * .12));
+  transition:none;                 /* 靠 --scan 自己補間就好，別再疊一層 */
 }
 .grid.live .tile::after{
-  opacity:calc(.25 + var(--scan) * .6);
-  box-shadow:0 0 calc(var(--scan) * 10px) var(--c);
-  transition:opacity .95s ease, box-shadow .95s ease;
+  opacity:calc(.18 + var(--scan) * .82);
+  width:calc(3px + var(--scan) * 2px);
+  box-shadow:0 0 calc(var(--scan) * 20px) var(--c);
+  transition:none;
 }
 .grid.live .tile .ghost{
-  opacity:calc(.06 + var(--scan) * .07);
-  transition:opacity .95s ease;
+  opacity:calc(.05 + var(--scan) * .16);
+  transform:scale(calc(1 + var(--scan) * .08));
+  transition:none;
 }
 /* 掃過時左上角掠過一抹極淡的暈 */
 .tile .glow{
