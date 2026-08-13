@@ -343,6 +343,29 @@ body{
   opacity:0;transform:translateX(-100%);
 }
 .tile.fire .sweep{animation:sweep .44s ease-out}
+
+/* ── 待機掃描：一道光每 5 秒巡過六格 ── */
+.grid.live .tile{
+  --scan:0;                    /* 這一格被掃到的強度 0~1 */
+}
+.grid.live .tile .lamp{
+  opacity:calc(.35 + var(--scan) * .55);
+  filter:drop-shadow(0 0 calc(var(--scan) * 12px) var(--c));
+}
+.grid.live .tile::after{
+  opacity:calc(.25 + var(--scan) * .6);
+  box-shadow:0 0 calc(var(--scan) * 10px) var(--c);
+}
+.grid.live .tile .ghost{
+  opacity:calc(.06 + var(--scan) * .07);
+}
+/* 掃過時左上角掠過一抹極淡的暈 */
+.tile .glow{
+  position:absolute;inset:0;pointer-events:none;border-radius:15px;
+  background:radial-gradient(circle at 22% 28%,var(--c),transparent 62%);
+  opacity:calc(var(--scan) * .08);
+  transition:opacity .5s ease;
+}
 @keyframes sweep{
   0%{opacity:.55;transform:translateX(-100%)}
   100%{opacity:0;transform:translateX(100%)}
@@ -569,6 +592,7 @@ APPS.forEach(a => {
     `<span class="ghost"><svg viewBox="0 0 24 24">${svg}</svg></span>
      <span class="lamp"><svg viewBox="0 0 24 24">${svg}</svg></span>
      <span class="txt"><span class="zh">${a.zh}</span><span class="en">${a.en}</span></span>
+     <span class="glow"></span>
      <span class="sweep"></span>`;
 
   b.addEventListener('click', () => {
@@ -612,6 +636,20 @@ function revealTiles(){
       }, 420);
     }, 260 + i*65);
   });
+}
+
+/* ── 待機掃描 ── */
+let scanTimer = null;
+function startScan(){
+  if (scanTimer) return;
+  let i = 0;
+  const step = () => {
+    tiles.forEach((t, n) => t.style.setProperty('--scan', n === i ? '1' : '0'));
+    i = (i + 1) % (tiles.length + 4);      /* 多 4 拍留白，才不會一直在跑 */
+    if (i >= tiles.length) tiles.forEach(t => t.style.setProperty('--scan','0'));
+  };
+  step();
+  scanTimer = setInterval(step, 620);
 }
 
 /* ── 兩個分頁切換 ── */
@@ -718,6 +756,7 @@ function finish(){
   show('dash'); loadDash();
   revealTiles();
   armedAt = Date.now() + 900;     /* 0.9 秒內的觸碰一律無效 */
+  setTimeout(startScan, 1400);    /* 等進場自檢跑完才開始巡 */
 }
 function fade(a){
   if(a.paused) return;
