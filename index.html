@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta http-equiv="Cache-Control" content="no-store">
+<title>VLADJIA · MOTO</title>
+
+<!-- ── PWA ── -->
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#07080A">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MOTO">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
+<link rel="icon" href="./icon-192.png" type="image/png">
+<style>
+:root{
+  --ink:#07080A;
+  --panel:#12151B;
+  --panel-hi:#181C24;
+  --edge:#242A35;
+  --legend:#7C858F;
+  --white:#E9EDF2;
+
+  --brand:#9E000F;      /* 你 logo 的紅 */
+  --brand-hi:#E8402A;
+
+  --red:#E8402A;
+  --amber:#F5A623;
+  --green:#2FE0A0;
+  --blue:#4DA6FF;
+  --cyan:#3FD6E8;
+  --violet:#B47CFF;
+}
+
+@font-face{
+  font-family:'Mechsuit';
+  src:url('./fonts/Mechsuit.otf') format('opentype');
+  font-display:swap;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:var(--ink)}
+body{
+  color:var(--white);
+  font-family:'Mechsuit',ui-monospace,'Roboto Mono','DIN Alternate',
+              'Noto Sans TC','PingFang TC',sans-serif;
+  user-select:none;
+}
+
+.screen{
+  position:fixed;inset:0;
+  opacity:0;pointer-events:none;
+  transition:opacity .5s ease;
+  display:flex;flex-direction:column;
+}
+.screen.on{opacity:1;pointer-events:auto}
+
+/* ═══════════ 1 · 點火 ═══════════ */
+#boot{align-items:center;justify-content:center}
+#shake{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:20px;
+}
+#shake.hit{animation:shake .42s cubic-bezier(.36,.07,.19,.97)}
+@keyframes shake{
+  0%,100%{transform:translate(0,0)}
+  8%{transform:translate(-7px,4px)}
+  18%{transform:translate(6px,-5px)}
+  30%{transform:translate(-5px,-3px)}
+  44%{transform:translate(4px,3px)}
+  60%{transform:translate(-2px,2px)}
+  78%{transform:translate(2px,-1px)}
+}
+
+/* 起動鈕 */
+.starter{
+  position:absolute;
+  width:158px;height:158px;border-radius:50%;
+  background:radial-gradient(circle at 50% 38%,#1B1F27,#0B0D11);
+  border:2px solid var(--brand-hi);
+  color:var(--brand-hi);
+  display:grid;place-items:center;cursor:pointer;
+  box-shadow:0 0 34px rgba(232,64,42,.22), inset 0 0 26px rgba(232,64,42,.12);
+  transition:transform .16s ease;
+}
+.starter:active{transform:scale(.93)}
+.starter svg{width:56px;height:56px}
+.starter::before{
+  content:'';position:absolute;inset:-14px;border-radius:50%;
+  border:1px solid var(--brand-hi);opacity:0;
+  animation:ring 2.1s ease-out infinite;
+}
+@keyframes ring{
+  0%{transform:scale(.88);opacity:.5}
+  70%{opacity:0}
+  100%{transform:scale(1.2);opacity:0}
+}
+.starter.gone{animation:pull .3s ease-in forwards}
+@keyframes pull{to{transform:scale(.35);opacity:0}}
+
+#boot .cap{
+  position:absolute;bottom:calc(env(safe-area-inset-bottom) + 54px);
+  font-size:11px;letter-spacing:.34em;color:var(--legend);
+  text-transform:uppercase;transition:opacity .25s ease;
+}
+#boot .cap.gone{opacity:0}
+
+/* 印章：logo 主體 */
+#mark{
+  width:min(56vw,218px);height:auto;
+  opacity:0;
+  transform:scale(1.75);
+  filter:blur(9px);
+}
+#mark.stamp{animation:stamp .5s cubic-bezier(.15,.9,.25,1) forwards,
+                       breathe 3.4s 0.6s ease-in-out infinite}
+@keyframes stamp{
+  0%{opacity:0;transform:scale(1.75);filter:blur(9px)}
+  55%{opacity:1;transform:scale(.965);filter:blur(0)}
+  78%{transform:scale(1.02)}
+  100%{opacity:1;transform:scale(1);filter:blur(0)}
+}
+@keyframes breathe{
+  0%,100%{filter:drop-shadow(0 0 14px rgba(158,0,15,.35))}
+  50%{filter:drop-shadow(0 0 30px rgba(232,64,42,.6))}
+}
+
+/* END OF TIME：從中央往兩側拉開 */
+#eot{
+  width:min(76vw,306px);height:auto;
+  opacity:0;clip-path:inset(0 50% 0 50%);
+}
+#eot.wipe{animation:wipe .66s cubic-bezier(.2,.85,.2,1) forwards}
+@keyframes wipe{
+  0%{opacity:0;clip-path:inset(0 50% 0 50%)}
+  22%{opacity:1}
+  100%{opacity:1;clip-path:inset(0 0 0 0);
+       filter:drop-shadow(0 0 15px rgba(232,64,42,.45))}
+}
+
+/* 銘牌 */
+#word{
+  width:min(42vw,172px);height:auto;
+  opacity:0;transform:translateY(16px);
+}
+#word.up{animation:up .8s ease-out forwards}
+@keyframes up{to{opacity:.95;transform:translateY(0)}}
+
+/* 落印衝擊波 */
+.wave{
+  position:absolute;width:200px;height:200px;border-radius:50%;
+  border:2px solid var(--brand-hi);opacity:0;pointer-events:none;
+}
+.wave.go{animation:wave .8s cubic-bezier(.1,.8,.3,1) forwards}
+@keyframes wave{
+  0%{opacity:.85;transform:scale(.25)}
+  100%{opacity:0;transform:scale(3.4)}
+}
+.flash{
+  position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(circle at 50% 46%,rgba(232,64,42,.42),transparent 62%);
+  opacity:0;
+}
+.flash.go{animation:flash .6s ease-out forwards}
+@keyframes flash{0%{opacity:1}100%{opacity:0}}
+
+/* ═══════════ 2 · 開機終端 ═══════════ */
+#term{
+  padding:calc(env(safe-area-inset-top) + 40px) 20px
+         calc(env(safe-area-inset-bottom) + 30px);
+  justify-content:center;
+}
+#term .head{
+  font-size:18px;letter-spacing:.14em;color:var(--brand-hi);
+  text-transform:uppercase;margin-bottom:18px;line-height:1.4;
+  min-height:52px;
+  text-shadow:0 0 18px rgba(232,64,42,.45);
+}
+#term .log{
+  font-family:ui-monospace,'Roboto Mono',monospace;
+  font-size:11.5px;line-height:2.1;color:#96A0AC;white-space:pre;
+}
+#term .log .ok{color:var(--green)}
+#term .log div{animation:pop .16s ease-out}
+@keyframes pop{from{opacity:0;transform:translateX(-6px)}}
+#term .online{
+  margin-top:20px;font-size:15px;letter-spacing:.3em;color:var(--white);
+  opacity:0;text-transform:uppercase;
+}
+#term .online.go{animation:online .5s ease-out forwards}
+@keyframes online{
+  0%{opacity:0;letter-spacing:.6em;text-shadow:0 0 26px var(--brand-hi)}
+  100%{opacity:1;letter-spacing:.3em;text-shadow:0 0 12px rgba(232,64,42,.5)}
+}
+#term .cur{
+  display:inline-block;width:8px;height:13px;background:var(--brand-hi);
+  vertical-align:-2px;margin-left:4px;animation:blink .62s steps(1) infinite;
+}
+@keyframes blink{50%{opacity:0}}
+#term::after{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(180deg,transparent 0 2px,rgba(0,0,0,.3) 2px 4px);
+  opacity:.5;
+}
+.skiphint{
+  position:absolute;right:18px;bottom:calc(env(safe-area-inset-bottom) + 14px);
+  font-size:9px;letter-spacing:.24em;color:#3D444E;text-transform:uppercase;z-index:5;
+}
+
+/* ═══════════ 3 · 儀表板 ═══════════ */
+#dash{padding-top:env(safe-area-inset-top)}
+
+.rack{
+  flex:none;display:flex;align-items:stretch;gap:6px;padding:8px 8px 9px;
+  border-bottom:1px solid var(--edge);
+  overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+.rack::-webkit-scrollbar{display:none}
+
+.tile{
+  position:relative;overflow:hidden;flex:1 0 auto;min-width:56px;
+  background:var(--panel);border:1px solid var(--edge);border-radius:11px;
+  color:var(--white);font:inherit;
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  padding:8px 5px 7px;cursor:pointer;
+  transition:transform .12s ease,background .12s ease;
+}
+.tile:active{transform:scale(.93);background:var(--panel-hi)}
+.tile:focus-visible{outline:2px solid var(--c);outline-offset:2px}
+.tile .lamp{width:23px;height:23px;color:var(--c);opacity:.5;
+  transition:opacity .16s ease,filter .16s ease}
+.tile .lamp svg{width:100%;height:100%;display:block}
+.tile:active .lamp{opacity:1;filter:drop-shadow(0 0 10px var(--c))}
+.tile .zh{font-size:10px;letter-spacing:.05em;white-space:nowrap;color:#B6BEC8}
+.tile::after{
+  content:'';position:absolute;left:0;right:0;bottom:0;height:2px;
+  background:var(--c);opacity:.3;
+}
+.tile .sweep{
+  position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(90deg,transparent,var(--c),transparent);
+  opacity:0;transform:translateX(-100%);
+}
+.tile.fire .sweep{animation:sweep .42s ease-out}
+@keyframes sweep{
+  0%{opacity:.55;transform:translateX(-100%)}
+  100%{opacity:0;transform:translateX(100%)}
+}
+
+.reload{
+  flex:0 0 40px;background:transparent;border:1px solid var(--edge);
+  border-radius:11px;color:var(--legend);display:grid;place-items:center;cursor:pointer;
+}
+.reload:active{background:var(--panel-hi)}
+.reload svg{width:17px;height:17px}
+
+.stage{flex:1;position:relative;min-height:0;background:var(--ink)}
+.stage iframe{width:100%;height:100%;border:0;display:block}
+
+.veil{
+  position:absolute;inset:0;display:grid;place-items:center;gap:14px;
+  background:var(--ink);text-align:center;padding:26px;
+  font-size:11px;letter-spacing:.2em;color:var(--legend);text-transform:uppercase;
+  transition:opacity .35s ease;
+}
+.veil.hide{opacity:0;pointer-events:none}
+.veil .bar{width:120px;height:2px;background:var(--edge);overflow:hidden;border-radius:2px}
+.veil .bar span{display:block;height:100%;width:36%;background:var(--brand-hi);
+  animation:slide 1.15s ease-in-out infinite}
+@keyframes slide{0%{transform:translateX(-100%)}100%{transform:translateX(340%)}}
+.veil .again{
+  margin-top:4px;padding:9px 18px;background:transparent;
+  border:1px solid var(--brand-hi);border-radius:9px;color:var(--brand-hi);
+  font:inherit;font-size:10px;letter-spacing:.2em;text-transform:uppercase;
+  cursor:pointer;display:none;
+}
+.veil.stuck .bar{display:none}
+.veil.stuck .again{display:block}
+
+.peek{
+  position:fixed;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom) + 14px);
+  background:#0B0D11;border:1px solid var(--edge);border-radius:11px;
+  padding:12px 14px;font-size:10px;line-height:1.6;color:var(--legend);
+  font-family:ui-monospace,monospace;word-break:break-all;
+  opacity:0;pointer-events:none;transition:opacity .18s ease;z-index:40;
+}
+.peek.on{opacity:1}
+.peek b{color:var(--white);letter-spacing:.16em;margin-right:6px}
+
+@media (prefers-reduced-motion:reduce){*{animation:none !important;transition:none !important}}
+</style>
+</head>
+<body>
+
+<!-- 1 · 點火 -->
+<section class="screen on" id="boot">
+  <div id="shake">
+    <div class="flash" id="flash"></div>
+    <div class="wave" id="wave"></div>
+    <img id="mark" alt="">
+    <img id="eot" alt="">
+    <img id="word" alt="">
+  </div>
+  <button class="starter" id="starter" aria-label="啟動">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+         stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 2.6v7.2"/><path d="M17.6 5.4a7.6 7.6 0 1 1-11.2 0"/>
+    </svg>
+  </button>
+  <div class="cap" id="cap">Press to start</div>
+</section>
+
+<!-- 2 · 開機終端 -->
+<section class="screen" id="term">
+  <div class="head" id="head"></div>
+  <div class="log" id="log"></div>
+  <div class="online" id="online">All systems online</div>
+  <div class="skiphint">Tap to skip</div>
+</section>
+
+<!-- 3 · 儀表板 -->
+<section class="screen" id="dash">
+  <div class="rack" id="rack"></div>
+  <div class="stage">
+    <iframe id="frame" title="儀表板" referrerpolicy="no-referrer-when-downgrade"></iframe>
+    <div class="veil" id="veil">
+      <div>Dashboard uplink</div>
+      <div class="bar"><span></span></div>
+      <button class="again" id="again">重新連線</button>
+    </div>
+  </div>
+</section>
+
+<div class="peek" id="peek"></div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════
+   ★ 以後只改這一段 ★
+   ══════════════════════════════════════════════════════════════ */
+
+const DASHBOARD_URL =
+  'https://script.google.com/macros/s/AKfycbxF9x9ZW8dO3x4kNgLVp5bOFut2SzUAopGAgeoXkDUqftRJgxt0O3wH2d2Sgkrc6atVBg/exec';
+
+/* 素材路徑。index.html 跟素材放同一個 repo 就用相對路徑；
+   放別的地方就換成 https://raw.githubusercontent.com/vladjia/EndOfTime/main/... */
+const ASSET = {
+  mark : './mark.png',
+  eot  : './eot.png',
+  word : './word.png',
+  boot : './opening.mp3',
+  trans: './EndofTimeinitializingcoresystemssystemsonline.mp3',
+};
+
+const APPS = [
+  { zh:'胎壓', line:'TIRE PRESSURE MONITOR', c:'red', icon:'tire',
+    pkg:'com.zl.dev.tire.king',  cls:'com.zl.dev.tire.ui.LauncherActivity' },
+  { zh:'方向', line:'SIGNAL RELAY',          c:'amber', icon:'turn',
+    pkg:'com.koso.flasher',      cls:'com.koso.flasher.MainActivity' },
+  { zh:'光輪', line:'LIGHTING BUS · MAIN',   c:'blue', icon:'head',
+    pkg:'com.szelk.ledlamppro',  cls:'com.szelk.ledlamppro.ui.SplashActivity' },
+  { zh:'副燈', line:'LIGHTING BUS · AUX',    c:'cyan', icon:'bulb',
+    pkg:'com.ledlamp',           cls:'com.FirstActivity' },
+  { zh:'幻彩', line:'RHX WIRELESS LINK',     c:'green', icon:'wifi',
+    pkg:'com.rhxled.led_cp',     cls:'com.rhxled.led_cp.WiFiHelper' },
+  { zh:'情境', line:'SCENE CONTROLLER',      c:'violet', icon:'star',
+    pkg:'com.spled.scenex',      cls:'com.spled.scenex.MainActivity' },
+];
+
+/* 動畫節拍，全部對準你的音檔（單位：毫秒）
+   opening.mp3 4.10s：0.10s 一記重擊，之後長殘響
+   trans.mp3   6.34s：1.30~2.70s 說 initializing core systems
+                      3.30~4.30s 說 systems online              */
+const T = {
+  impact  : 100,    // 落印（對上重擊）
+  eot     : 1050,   // END OF TIME 拉開
+  word    : 1780,   // 銘牌浮現
+  toTerm  : 3850,   // 切終端機（殘響收尾）
+  /* 以下相對於 trans.mp3 開始 */
+  title   : 1300,   // 標題開始打字
+  titleMs : 56,     // 每字毫秒（25 字剛好 1.40s，跟語音同步收）
+  lines   : 2850,   // 六行檢查開跑
+  lineMs  : 108,
+  online  : 3600,   // ALL SYSTEMS ONLINE（對上第二句語音）
+  toDash  : 5000,
+};
+
+const KEYCLICK = true;   // 打字聲，不要就改 false
+const KEYVOL   = 0.05;
+
+/* ══════════════════════════════════════════════════════════════ */
+
+const ICONS = {
+  tire:'<path d="M5 19v-7a7 7 0 0 1 14 0v7" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><path d="M12 9v4" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/><circle cx="12" cy="16.4" r="1.15" fill="currentColor"/>',
+  turn:'<path d="M10.5 5.5 4.5 12l6 6.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M14.5 5.5 20.5 12l-6 6.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
+  head:'<path d="M4 5.5h5a6.5 6.5 0 0 1 0 13H4z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/><path d="M14 8h6M14 12h6M14 16h6" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>',
+  bulb:'<circle cx="12" cy="10" r="5" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M9.5 17.5h5M10.5 20.5h3" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><path d="M12 1.5v2M3.6 5.2l1.4 1.4M20.4 5.2 19 6.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>',
+  wifi:'<path d="M3.5 8.5a13 13 0 0 1 17 0" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><path d="M6.8 12.4a8.4 8.4 0 0 1 10.4 0" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><path d="M9.9 16.1a4 4 0 0 1 4.2 0" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><circle cx="12" cy="19.4" r="1.3" fill="currentColor"/>',
+  star:'<path d="M12 2.5 14 10l7.5 2-7.5 2-2 7.5-2-7.5L2.5 12 10 10z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>',
+};
+
+const BRIDGE = typeof window.AppInventor !== 'undefined';
+const REDUCE = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const FAST   = /[?&]skip=1/.test(location.search);
+const $ = id => document.getElementById(id);
+
+const APP_VER = '20260813-1';   /* 跟 sw.js 最上面的 VER 對暗號，兩邊要一樣 */
+let swVer  = '—';
+let booted = false;
+
+$('mark').src = ASSET.mark;
+$('eot').src  = ASSET.eot;
+$('word').src = ASSET.word;
+
+/* ── 音檔 ── */
+const aBoot  = new Audio(ASSET.boot);
+const aTrans = new Audio(ASSET.trans);
+[aBoot, aTrans].forEach(a => { a.preload = 'auto'; a.playsInline = true; });
+
+/* 打字聲用合成的，才不用再多掛一個檔 */
+let AC = null;
+function click(){
+  if(!KEYCLICK) return;
+  try{
+    if(!AC){ const C = window.AudioContext||window.webkitAudioContext; if(!C) return; AC = new C(); }
+    if(AC.state==='suspended') AC.resume();
+    const t = AC.currentTime, o = AC.createOscillator(), g = AC.createGain();
+    o.type='square'; o.frequency.value = 880 + Math.random()*460;
+    g.gain.setValueAtTime(KEYVOL, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t+.025);
+    o.connect(g).connect(AC.destination); o.start(t); o.stop(t+.04);
+  }catch(e){}
+}
+
+/* ── 發射列 ── */
+const peek = $('peek');
+let peekTimer = null;
+
+APPS.forEach(a => {
+  const b = document.createElement('button');
+  b.className = 'tile';
+  b.style.setProperty('--c', `var(--${a.c})`);
+  b.innerHTML =
+    `<span class="lamp"><svg viewBox="0 0 24 24">${ICONS[a.icon]||ICONS.star}</svg></span>
+     <span class="zh">${a.zh}</span><span class="sweep"></span>`;
+
+  b.addEventListener('click', () => {
+    if(b.dataset.lp === '1'){ b.dataset.lp = '0'; return; }
+    fire(a, b);
+  });
+
+  let hold = null;
+  const down = () => { hold = setTimeout(() => {
+    b.dataset.lp = '1';
+    peek.innerHTML = `<b>PKG</b>${a.pkg}<br><b>CLS</b>${a.cls}`;
+    peek.classList.add('on');
+    clearTimeout(peekTimer);
+    peekTimer = setTimeout(() => peek.classList.remove('on'), 3200);
+  }, 480); };
+  const up = () => clearTimeout(hold);
+  b.addEventListener('touchstart', down, {passive:true});
+  b.addEventListener('touchend', up);
+  b.addEventListener('touchcancel', up);
+  b.addEventListener('mousedown', down);
+  b.addEventListener('mouseup', up);
+  b.addEventListener('mouseleave', up);
+
+  $('rack').appendChild(b);
+});
+
+const reload = document.createElement('button');
+reload.className = 'reload';
+reload.setAttribute('aria-label','重新載入儀表板');
+reload.innerHTML =
+  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round">
+     <path d="M20 11a8 8 0 1 0-2.1 6.2"/><path d="M20 5v6h-6"/></svg>`;
+reload.addEventListener('click', () => { if(reload.dataset.lp==='1'){reload.dataset.lp='0';return;} loadDash(); });
+
+/* 長按重載鈕 = 對暗號 + 強制清快取重來 */
+let rHold = null;
+const rDown = () => { rHold = setTimeout(() => {
+  reload.dataset.lp = '1';
+  askVer();
+  const match = (swVer === APP_VER);
+  peek.innerHTML =
+    `<b>APP</b>${APP_VER}<br><b>SW</b>${swVer} ${match ? '✅ 對上了' : '⚠️ 沒對上'}` +
+    `<br><b>放開</b>${match ? '無事發生' : '會清快取重來'}`;
+  peek.classList.add('on');
+  clearTimeout(peekTimer);
+  peekTimer = setTimeout(() => peek.classList.remove('on'), 4000);
+}, 700); };
+const rUp = () => {
+  clearTimeout(rHold);
+  if (reload.dataset.lp === '1' && swVer !== APP_VER){
+    const c = navigator.serviceWorker && navigator.serviceWorker.controller;
+    if (c) c.postMessage({ type:'PURGE' });
+    setTimeout(() => location.reload(), 400);
+  }
+};
+reload.addEventListener('touchstart', rDown, {passive:true});
+reload.addEventListener('touchend', rUp);
+reload.addEventListener('touchcancel', () => clearTimeout(rHold));
+reload.addEventListener('mousedown', rDown);
+reload.addEventListener('mouseup', rUp);
+reload.addEventListener('mouseleave', () => clearTimeout(rHold));
+$('rack').appendChild(reload);
+
+function fire(app, el){
+  el.classList.remove('fire'); void el.offsetWidth; el.classList.add('fire');
+  click();
+  if(!BRIDGE){
+    peek.innerHTML = `<b>測試模式</b>未接發射器<br><b>PKG</b>${app.pkg}`;
+    peek.classList.add('on');
+    clearTimeout(peekTimer);
+    peekTimer = setTimeout(() => peek.classList.remove('on'), 2600);
+    return;
+  }
+  /* 尾巴的時間戳必留 —— 同字串 App Inventor 不會再觸發 */
+  window.AppInventor.setWebViewString(app.pkg + '|' + app.cls + '|' + Date.now());
+}
+
+/* ── 儀表板 ── */
+let watchdog = null;
+function loadDash(){
+  const v = $('veil'), f = $('frame');
+  v.classList.remove('hide','stuck');
+  clearTimeout(watchdog);
+  watchdog = setTimeout(() => v.classList.add('stuck'), 12000);
+  f.src = DASHBOARD_URL + (DASHBOARD_URL.includes('?') ? '&' : '?') + 't=' + Date.now();
+}
+$('frame').addEventListener('load', () => {
+  clearTimeout(watchdog); $('veil').classList.add('hide');
+});
+$('again').addEventListener('click', loadDash);
+
+/* ── 流程 ── */
+function show(id){
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('on'));
+  $(id).classList.add('on');
+}
+let seq = [], done = false;
+function at(ms, fn){ seq.push(setTimeout(fn, ms)); }
+function finish(){
+  if(done) return;
+  done = true;
+  seq.forEach(clearTimeout); seq = [];
+  try{ aBoot.pause(); }catch(e){}
+  try{ fade(aTrans); }catch(e){}
+  show('dash'); loadDash();
+}
+function fade(a){
+  if(a.paused) return;
+  const s = setInterval(() => {
+    a.volume = Math.max(0, a.volume - .12);
+    if(a.volume <= .01){ clearInterval(s); a.pause(); }
+  }, 45);
+}
+
+$('starter').addEventListener('click', ignite, {once:true});
+
+function ignite(){
+  booted = true;
+  loadDash();                     /* 儀表板背景先偷跑，吃掉 GAS 冷啟動 */
+
+  /* 這一下手指觸碰是唯一能解開音訊的時機，兩個音檔都要在這裡點過名 */
+  aBoot.play().catch(()=>{});
+  aTrans.play().then(() => { aTrans.pause(); aTrans.currentTime = 0; }).catch(()=>{});
+
+  $('starter').classList.add('gone');
+  $('cap').classList.add('gone');
+
+  if(FAST || REDUCE){ finish(); return; }
+
+  at(T.impact, () => {
+    $('mark').classList.add('stamp');
+    $('wave').classList.add('go');
+    $('flash').classList.add('go');
+    $('shake').classList.add('hit');
+  });
+  at(T.eot,    () => $('eot').classList.add('wipe'));
+  at(T.word,   () => $('word').classList.add('up'));
+  at(T.toTerm, () => { show('term'); runTerminal(); });
+
+  /* 動畫跑起來之後才開放點畫面跳過，免得起動那一下就被自己跳掉 */
+  at(700, () => {
+    $('boot').addEventListener('click', finish);
+    $('term').addEventListener('click', finish);
+  });
+}
+
+function runTerminal(){
+  aTrans.volume = 1;
+  aTrans.currentTime = 0;
+  aTrans.play().catch(()=>{});
+
+  const head = $('head'), log = $('log');
+  const title = 'INITIALIZING CORE SYSTEMS';
+
+  /* 標題逐字，收在語音第一句講完的同一刻 */
+  [...title].forEach((ch, i) => {
+    at(T.title + i * T.titleMs, () => {
+      head.textContent += ch;
+      if(ch !== ' ') click();
+    });
+  });
+
+  /* 六行系統檢查，快速滾過 */
+  APPS.forEach((a, i) => {
+    at(T.lines + i * T.lineMs, () => {
+      const row = document.createElement('div');
+      const pad = '.'.repeat(Math.max(3, 30 - a.line.length));
+      row.innerHTML = '&gt; ' + a.line + ' ' + pad + ' <span class="ok">OK</span>';
+      log.appendChild(row);
+      click();
+    });
+  });
+
+  /* 對上語音第二句 */
+  at(T.online, () => {
+    $('online').classList.add('go');
+    $('online').innerHTML = 'All systems online<span class="cur"></span>';
+  });
+
+  at(T.toDash, finish);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PWA 自動更新
+   ① updateViaCache:'none' → sw.js 絕不吃 HTTP 快取
+   ② 每次載入 + 每次切回前景都主動 update()
+   ③ 新 SW 接手時才重載，而且只在還沒按下起動鈕前重載，不打斷動畫
+   裝在 App Inventor 的 WebViewer 裡不註冊，那邊不需要
+   ══════════════════════════════════════════════════════════════ */
+if ('serviceWorker' in navigator && !BRIDGE && location.protocol === 'https:'){
+  const hadController = !!navigator.serviceWorker.controller;
+  let reloading = false;
+
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (reloading) return;
+    if (!hadController) return;        // 第一次安裝，不用重載
+    if (booted) { swVer = '待重開'; return; }   // 動畫跑了就不打斷，下次開自然是新版
+    reloading = true;
+    location.reload();
+  });
+
+  navigator.serviceWorker.addEventListener('message', e => {
+    if (e.data && e.data.type === 'VER') swVer = e.data.ver;
+  });
+
+  window.addEventListener('load', async () => {
+    try{
+      const reg = await navigator.serviceWorker.register('./sw.js', { updateViaCache:'none' });
+      reg.update().catch(()=>{});
+      askVer();
+      /* 切回前景就再問一次有沒有新版 */
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden){ reg.update().catch(()=>{}); askVer(); }
+      });
+      setInterval(() => reg.update().catch(()=>{}), 30 * 60 * 1000);
+    }catch(e){}
+  });
+}
+
+function askVer(){
+  const c = navigator.serviceWorker && navigator.serviceWorker.controller;
+  if (c) c.postMessage({ type:'VER' });
+}
+</script>
+</body>
+</html>
